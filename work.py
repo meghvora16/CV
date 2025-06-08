@@ -23,6 +23,8 @@ def find_turning_index(potential):
     return peak_idx if peak_idx < valley_idx else valley_idx
 
 if uploaded_files:
+    all_scans = []
+
     for file in uploaded_files:
         st.subheader(f"📄 {file.name}")
         try:
@@ -51,8 +53,6 @@ if uploaded_files:
         else:
             df["Scan"] = 1
 
-        all_scans = []
-
         for cycle in df["Scan"].unique():
             scan_df = df[df["Scan"] == cycle].sort_values("Time (s)").reset_index(drop=True)
             pot_range = scan_df['WE(1).Potential (V)'].max() - scan_df['WE(1).Potential (V)'].min()
@@ -71,7 +71,7 @@ if uploaded_files:
             cathodic = scan_df.iloc[turning_idx:]
             all_scans.append((cycle, scan_df))
 
-            # Full cycle
+            # Full cycle plot
             fig1, ax1 = plt.subplots(figsize=(6, 4))
             ax1.plot(scan_df['WE(1).Potential (V)'], scan_df['WE(1).Current (A)'])
             ax1.set_title(f"Full Cycle - Cycle {cycle}")
@@ -80,7 +80,7 @@ if uploaded_files:
             ax1.grid(True)
             st.pyplot(fig1)
 
-            # Half cycles
+            # Half-cycle plots
             col1, col2 = st.columns(2)
             with col1:
                 fig2, ax2 = plt.subplots(figsize=(6, 4))
@@ -100,46 +100,48 @@ if uploaded_files:
                 ax3.grid(True)
                 st.pyplot(fig3)
 
-        # 🔁 Overlay plot at end
-        if all_scans:
-            st.markdown("## 📉 Overlaid CVs – Visual Comparison Across Cycles")
-            fig_overlay, ax_overlay = plt.subplots(figsize=(8, 5))
-            for cycle, scan_df in all_scans:
-                ax_overlay.plot(scan_df['WE(1).Potential (V)'], scan_df['WE(1).Current (A)'], label=f"Cycle {cycle}")
-            ax_overlay.set_title("Overlaid Cyclic Voltammograms")
-            ax_overlay.set_xlabel("Potential (V)")
-            ax_overlay.set_ylabel("Current (A)")
-            ax_overlay.grid(True)
-            ax_overlay.legend(fontsize=8, loc="upper right")
-            st.pyplot(fig_overlay)
-            # ⏱️ Time vs Starting Current/Potential across cycles
-            st.markdown("## 🕒 Starting Point Drift Over Time")
-            
-            start_times = []
-            start_currents = []
-            start_potentials = []
-            
-            for _, scan_df in all_scans:
-                first_point = scan_df.iloc[0]
-                start_times.append(first_point["Time (s)"])
-                start_currents.append(first_point["WE(1).Current (A)"])
-                start_potentials.append(first_point["WE(1).Potential (V)"])
-            
-            # Plot Current vs Time
-            fig_time_curr, ax1 = plt.subplots()
-            ax1.plot(start_times, start_currents, marker='o')
-            ax1.set_title("Starting Current vs Time")
-            ax1.set_xlabel("Time (s)")
-            ax1.set_ylabel("Current (A)")
-            ax1.grid(True)
-            st.pyplot(fig_time_curr)
-            
-            # (Optional) Plot Potential vs Time
-            fig_time_pot, ax2 = plt.subplots()
-            ax2.plot(start_times, start_potentials, marker='o', color='green')
-            ax2.set_title("Starting Potential vs Time")
-            ax2.set_xlabel("Time (s)")
-            ax2.set_ylabel("Potential (V)")
-            ax2.grid(True)
-            st.pyplot(fig_time_pot)
+    # 🔁 Overlay plot at end
+    if all_scans:
+        st.markdown("## 📉 Overlaid CVs – Visual Comparison Across Cycles")
+        fig_overlay, ax_overlay = plt.subplots(figsize=(8, 5))
+        for cycle, scan_df in all_scans:
+            ax_overlay.plot(scan_df['WE(1).Potential (V)'], scan_df['WE(1).Current (A)'], label=f"Cycle {cycle}")
+        ax_overlay.set_title("Overlaid Cyclic Voltammograms")
+        ax_overlay.set_xlabel("Potential (V)")
+        ax_overlay.set_ylabel("Current (A)")
+        ax_overlay.grid(True)
+        ax_overlay.legend(fontsize=8, loc="upper right")
+        st.pyplot(fig_overlay)
 
+        # ⏱️ Plot exactly 30 starting points vs time
+        st.markdown("## 🕒 Starting Point Drift (First 30 Cycles Only)")
+
+        start_times = []
+        start_currents = []
+        start_potentials = []
+
+        all_scans_sorted = sorted(all_scans, key=lambda x: x[0])[:30]  # take first 30 cycles only
+
+        for cycle, scan_df in all_scans_sorted:
+            first_point = scan_df.iloc[0]
+            start_times.append(first_point["Time (s)"])
+            start_currents.append(first_point["WE(1).Current (A)"])
+            start_potentials.append(first_point["WE(1).Potential (V)"])
+
+        # Plot Current vs Time
+        fig_time_curr, ax1 = plt.subplots()
+        ax1.plot(start_times, start_currents, marker='o')
+        ax1.set_title("Starting Current vs Time (First 30 Cycles)")
+        ax1.set_xlabel("Time (s)")
+        ax1.set_ylabel("Current (A)")
+        ax1.grid(True)
+        st.pyplot(fig_time_curr)
+
+        # Plot Potential vs Time
+        fig_time_pot, ax2 = plt.subplots()
+        ax2.plot(start_times, start_potentials, marker='o', color='green')
+        ax2.set_title("Starting Potential vs Time (First 30 Cycles)")
+        ax2.set_xlabel("Time (s)")
+        ax2.set_ylabel("Potential (V)")
+        ax2.grid(True)
+        st.pyplot(fig_time_pot)
