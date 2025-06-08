@@ -5,7 +5,7 @@ import numpy as np
 import re
 
 st.set_page_config(layout="wide")
-st.title("CV Analyzer – Full & Half Cycle Plotting with Diagnostics")
+st.title("Cyclic Voltammetry Analyzer")
 
 uploaded_files = st.file_uploader("Upload CV Excel files", type=["xlsx"], accept_multiple_files=True)
 
