@@ -112,3 +112,33 @@ if uploaded_files:
             ax_overlay.grid(True)
             ax_overlay.legend(fontsize=8, loc="upper right")
             st.pyplot(fig_overlay)
+# 📈 Plot drift of starting current and potential across cycles
+            st.markdown("## 📊 Drift of Starting Potential and Current Across Cycles")
+            
+            start_potential = []
+            start_current = []
+            cycle_ids = []
+            
+            for cycle, scan_df in all_scans:
+                first_row = scan_df.iloc[0]
+                cycle_ids.append(cycle)
+                start_potential.append(first_row["WE(1).Potential (V)"])
+                start_current.append(first_row["WE(1).Current (A)"])
+            
+            # Potential drift
+            fig_pot, ax_pot = plt.subplots()
+            ax_pot.plot(cycle_ids, start_potential, marker='o')
+            ax_pot.set_title("Starting Potential Drift")
+            ax_pot.set_xlabel("Cycle")
+            ax_pot.set_ylabel("Potential (V)")
+            ax_pot.grid(True)
+            st.pyplot(fig_pot)
+            
+            # Current drift
+            fig_curr, ax_curr = plt.subplots()
+            ax_curr.plot(cycle_ids, start_current, marker='o', color='orange')
+            ax_curr.set_title("Starting Current Drift")
+            ax_curr.set_xlabel("Cycle")
+            ax_curr.set_ylabel("Current (A)")
+            ax_curr.grid(True)
+            st.pyplot(fig_curr)
