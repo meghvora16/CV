@@ -17,18 +17,10 @@ def extract_cycle_range(filename):
         return list(range(start, end + 1))
     return []
 
-# ✅ NEW turning point detection (based on potential reversal)
 def find_turning_index(potential):
     peak_idx = potential.idxmax()
     valley_idx = potential.idxmin()
     return peak_idx if peak_idx < valley_idx else valley_idx
-
-def detect_peaks(potential, current):
-    peaks = []
-    for i in range(1, len(current) - 1):
-        if current[i-1] < current[i] > current[i+1] or current[i-1] > current[i] < current[i+1]:
-            peaks.append(i)
-    return peaks
 
 if uploaded_files:
     for file in uploaded_files:
@@ -43,7 +35,7 @@ if uploaded_files:
 
         required_cols = ["Time (s)", "WE(1).Potential (V)", "WE(1).Current (A)"]
         if not all(col in df.columns for col in required_cols):
-            st.error(f"❌ One or more required columns missing: {required_cols}")
+            st.error(f"❌ Missing required columns: {required_cols}")
             continue
 
         cycle_nums = extract_cycle_range(file.name)
@@ -58,6 +50,8 @@ if uploaded_files:
             df["Scan"] = scan_ids
         else:
             df["Scan"] = 1
+
+        all_scans = []
 
         for cycle in df["Scan"].unique():
             scan_df = df[df["Scan"] == cycle].sort_values("Time (s)").reset_index(drop=True)
@@ -75,22 +69,18 @@ if uploaded_files:
 
             anodic = scan_df.iloc[:turning_idx]
             cathodic = scan_df.iloc[turning_idx:]
+            all_scans.append((cycle, scan_df))
 
-            # Full cycle plot with peaks
+            # Full cycle
             fig1, ax1 = plt.subplots(figsize=(6, 4))
-            ax1.plot(scan_df['WE(1).Potential (V)'], scan_df['WE(1).Current (A)'], label='Full Cycle')
-            peak_indices = detect_peaks(scan_df['WE(1).Potential (V)'], scan_df['WE(1).Current (A)'])
-            for i in peak_indices:
-                ax1.plot(scan_df['WE(1).Potential (V)'][i], scan_df['WE(1).Current (A)'][i], 'ro')
-                ax1.annotate("Peak", (scan_df['WE(1).Potential (V)'][i], scan_df['WE(1).Current (A)'][i]),
-                             textcoords="offset points", xytext=(0, 10), ha='center')
+            ax1.plot(scan_df['WE(1).Potential (V)'], scan_df['WE(1).Current (A)'])
             ax1.set_title(f"Full Cycle - Cycle {cycle}")
             ax1.set_xlabel("Potential (V)")
             ax1.set_ylabel("Current (A)")
             ax1.grid(True)
             st.pyplot(fig1)
 
-            # Half-cycle plots
+            # Half cycles
             col1, col2 = st.columns(2)
             with col1:
                 fig2, ax2 = plt.subplots(figsize=(6, 4))
@@ -109,3 +99,16 @@ if uploaded_files:
                 ax3.set_ylabel("Current (A)")
                 ax3.grid(True)
                 st.pyplot(fig3)
+
+        # 🔁 Overlay plot at end
+        if all_scans:
+            st.markdown("## 📉 Overlaid CVs – Visual Comparison Across Cycles")
+            fig_overlay, ax_overlay = plt.subplots(figsize=(8, 5))
+            for cycle, scan_df in all_scans:
+                ax_overlay.plot(scan_df['WE(1).Potential (V)'], scan_df['WE(1).Current (A)'], label=f"Cycle {cycle}")
+            ax_overlay.set_title("Overlaid Cyclic Voltammograms")
+            ax_overlay.set_xlabel("Potential (V)")
+            ax_overlay.set_ylabel("Current (A)")
+            ax_overlay.grid(True)
+            ax_overlay.legend(fontsize=8, loc="upper right")
+            st.pyplot(fig_overlay)
