@@ -38,20 +38,32 @@ if uploaded_files:
         try:
             df = pd.read_excel(file, sheet_name="Sheet1")
         except Exception as e:
-            st.error(f"Could not read {file.name}: {e}")
+            st.error(f"❌ Could not read {file.name}: {e}")
             continue
 
-        # Detect cycle range from filename
         cycle_nums = extract_cycle_range(file.name)
-        num_scans = len(df) // len(cycle_nums) if cycle_nums else 1
-        df["Scan"] = np.repeat(cycle_nums, num_scans)
+        if cycle_nums:
+            total_rows = len(df)
+            scan_length = total_rows // len(cycle_nums)
+            scan_ids = []
+            for i, cycle in enumerate(cycle_nums):
+                start = i * scan_length
+                end = (i + 1) * scan_length if i < len(cycle_nums) - 1 else total_rows
+                scan_ids.extend([cycle] * (end - start))
+            df["Scan"] = scan_ids
+        else:
+            df["Scan"] = 1
 
         for cycle in df["Scan"].unique():
             scan_df = df[df["Scan"] == cycle].sort_values("Time (s)").reset_index(drop=True)
             st.markdown(f"### 🔄 Cycle {cycle}")
 
-            # Split into half-cycles
+            # Find turning point and check validity
             turning_idx = find_turning_index(scan_df['WE(1).Potential (V)'])
+            if turning_idx < 10 or turning_idx > len(scan_df) - 10:
+                st.warning(f"⚠️ Could not split Cycle {cycle} properly — skipping half-cycle plots.")
+                continue
+
             anodic = scan_df.iloc[:turning_idx]
             cathodic = scan_df.iloc[turning_idx:]
 
@@ -69,8 +81,9 @@ if uploaded_files:
             ax1.grid(True)
             st.pyplot(fig1)
 
-            # Half cycles
+            # Half-cycle plots
             col1, col2 = st.columns(2)
+
             with col1:
                 fig2, ax2 = plt.subplots(figsize=(6, 4))
                 ax2.plot(anodic["Time (s)"], anodic["WE(1).Current (A)"], color='green')
