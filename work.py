@@ -5,7 +5,7 @@ import numpy as np
 import re
 
 st.set_page_config(layout="wide")
-st.title("CV Analyzer – Full and Half Cycle Plotting with Peak Detection")
+st.title("CV Analyzer – Full & Half Cycle Plotting with Diagnostics")
 
 uploaded_files = st.file_uploader("Upload CV Excel files", type=["xlsx"], accept_multiple_files=True)
 
@@ -37,8 +37,16 @@ if uploaded_files:
         st.subheader(f"📄 {file.name}")
         try:
             df = pd.read_excel(file, sheet_name="Sheet1")
+            df.columns = [col.strip() for col in df.columns]
+            st.write("📋 Columns detected:", df.columns.tolist())
         except Exception as e:
             st.error(f"❌ Could not read {file.name}: {e}")
+            continue
+
+        # Confirm expected columns
+        required_cols = ["Time (s)", "WE(1).Potential (V)", "WE(1).Current (A)"]
+        if not all(col in df.columns for col in required_cols):
+            st.error(f"❌ One or more required columns missing: {required_cols}")
             continue
 
         cycle_nums = extract_cycle_range(file.name)
@@ -56,9 +64,13 @@ if uploaded_files:
 
         for cycle in df["Scan"].unique():
             scan_df = df[df["Scan"] == cycle].sort_values("Time (s)").reset_index(drop=True)
-            st.markdown(f"### 🔄 Cycle {cycle}")
+            pot_range = scan_df['WE(1).Potential (V)'].max() - scan_df['WE(1).Potential (V)'].min()
+            st.write(f"Cycle {cycle} – Potential Range: {pot_range:.4f} V")
 
-            # Find turning point and check validity
+            if pot_range < 0.01:
+                st.warning(f"⚠️ Cycle {cycle} skipped — potential range too small.")
+                continue
+
             turning_idx = find_turning_index(scan_df['WE(1).Potential (V)'])
             if turning_idx < 10 or turning_idx > len(scan_df) - 10:
                 st.warning(f"⚠️ Could not split Cycle {cycle} properly — skipping half-cycle plots.")
@@ -81,7 +93,7 @@ if uploaded_files:
             ax1.grid(True)
             st.pyplot(fig1)
 
-            # Half-cycle plots
+            # Half cycles
             col1, col2 = st.columns(2)
 
             with col1:
