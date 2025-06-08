@@ -17,13 +17,11 @@ def extract_cycle_range(filename):
         return list(range(start, end + 1))
     return []
 
+# ✅ NEW turning point detection (based on potential reversal)
 def find_turning_index(potential):
-    dp = potential.diff().fillna(0)
-    direction = np.sign(dp)
-    for i in range(1, len(direction)):
-        if direction[i] != direction[i-1] and direction[i] != 0:
-            return i
-    return len(potential) // 2
+    peak_idx = potential.idxmax()
+    valley_idx = potential.idxmin()
+    return peak_idx if peak_idx < valley_idx else valley_idx
 
 def detect_peaks(potential, current):
     peaks = []
@@ -43,7 +41,6 @@ if uploaded_files:
             st.error(f"❌ Could not read {file.name}: {e}")
             continue
 
-        # Confirm expected columns
         required_cols = ["Time (s)", "WE(1).Potential (V)", "WE(1).Current (A)"]
         if not all(col in df.columns for col in required_cols):
             st.error(f"❌ One or more required columns missing: {required_cols}")
@@ -79,7 +76,7 @@ if uploaded_files:
             anodic = scan_df.iloc[:turning_idx]
             cathodic = scan_df.iloc[turning_idx:]
 
-            # Full cycle with peaks
+            # Full cycle plot with peaks
             fig1, ax1 = plt.subplots(figsize=(6, 4))
             ax1.plot(scan_df['WE(1).Potential (V)'], scan_df['WE(1).Current (A)'], label='Full Cycle')
             peak_indices = detect_peaks(scan_df['WE(1).Potential (V)'], scan_df['WE(1).Current (A)'])
@@ -93,9 +90,8 @@ if uploaded_files:
             ax1.grid(True)
             st.pyplot(fig1)
 
-            # Half cycles
+            # Half-cycle plots
             col1, col2 = st.columns(2)
-
             with col1:
                 fig2, ax2 = plt.subplots(figsize=(6, 4))
                 ax2.plot(anodic["Time (s)"], anodic["WE(1).Current (A)"], color='green')
