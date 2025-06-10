@@ -120,6 +120,15 @@ if uploaded_files:
         start_currents = []
         start_potentials = []
 
+        # Separate storage for half-cycles starting points
+        start_anodic_times = []
+        start_anodic_currents = []
+        start_anodic_potentials = []
+
+        start_cathodic_times = []
+        start_cathodic_currents = []
+        start_cathodic_potentials = []
+
         all_scans_sorted = sorted(all_scans, key=lambda x: x[0])[:30]  # take first 30 cycles only
 
         for cycle, scan_df in all_scans_sorted:
@@ -128,7 +137,19 @@ if uploaded_files:
             start_currents.append(first_point["WE(1).Current (A)"])
             start_potentials.append(first_point["WE(1).Potential (V)"])
 
-        # Plot Current vs Time
+            # Anodic starting point
+            anodic_first_point = scan_df.iloc[0]
+            start_anodic_times.append(anodic_first_point["Time (s)"])
+            start_anodic_currents.append(anodic_first_point["WE(1).Current (A)"])
+            start_anodic_potentials.append(anodic_first_point["WE(1).Potential (V)"])
+
+            # Cathodic starting point
+            cathodic_first_point = scan_df.iloc[find_turning_index(scan_df['WE(1).Potential (V)'])]
+            start_cathodic_times.append(cathodic_first_point["Time (s)"])
+            start_cathodic_currents.append(cathodic_first_point["WE(1).Current (A)"])
+            start_cathodic_potentials.append(cathodic_first_point["WE(1).Potential (V)"])
+
+        # Plot Full Cycle Starting Points
         fig_time_curr, ax1 = plt.subplots()
         ax1.plot(start_times, start_currents, marker='o')
         ax1.set_title("Starting Current vs Time (First 30 Cycles)")
@@ -137,7 +158,6 @@ if uploaded_files:
         ax1.grid(True)
         st.pyplot(fig_time_curr)
 
-        # Plot Potential vs Time
         fig_time_pot, ax2 = plt.subplots()
         ax2.plot(start_times, start_potentials, marker='o', color='green')
         ax2.set_title("Starting Potential vs Time (First 30 Cycles)")
@@ -145,3 +165,37 @@ if uploaded_files:
         ax2.set_ylabel("Potential (V)")
         ax2.grid(True)
         st.pyplot(fig_time_pot)
+
+        # Plot Anodic Half-Cycle Starting Points
+        fig_anodic, ax_anodic = plt.subplots()
+        ax_anodic.plot(start_anodic_times, start_anodic_currents, marker='o', color='green')
+        ax_anodic.set_title("Anodic Starting Current vs Time (First 30 Cycles)")
+        ax_anodic.set_xlabel("Time (s)")
+        ax_anodic.set_ylabel("Current (A)")
+        ax_anodic.grid(True)
+        st.pyplot(fig_anodic)
+
+        fig_anodic_pot, ax_anodic_pot = plt.subplots()
+        ax_anodic_pot.plot(start_anodic_times, start_anodic_potentials, marker='o', color='green')
+        ax_anodic_pot.set_title("Anodic Starting Potential vs Time (First 30 Cycles)")
+        ax_anodic_pot.set_xlabel("Time (s)")
+        ax_anodic_pot.set_ylabel("Potential (V)")
+        ax_anodic_pot.grid(True)
+        st.pyplot(fig_anodic_pot)
+
+        # Plot Cathodic Half-Cycle Starting Points
+        fig_cathodic, ax_cathodic = plt.subplots()
+        ax_cathodic.plot(start_cathodic_times, start_cathodic_currents, marker='o', color='blue')
+        ax_cathodic.set_title("Cathodic Starting Current vs Time (First 30 Cycles)")
+        ax_cathodic.set_xlabel("Time (s)")
+        ax_cathodic.set_ylabel("Current (A)")
+        ax_cathodic.grid(True)
+        st.pyplot(fig_cathodic)
+        
+        fig_cathodic_pot, ax_cathodic_pot = plt.subplots()
+        ax_cathodic_pot.plot(start_cathodic_times, start_cathodic_potentials, marker='o', color='blue')
+        ax_cathodic_pot.set_title("Cathodic Starting Potential vs Time (First 30 Cycles)")
+        ax_cathodic_pot.set_xlabel("Time (s)")
+        ax_cathodic_pot.set_ylabel("Potential (V)")
+        ax_cathodic_pot.grid(True)
+        st.pyplot(fig_cathodic_pot)
