@@ -150,9 +150,9 @@ if uploaded_files:
             start_cathodic_potentials.append(cathodic_first_point["WE(1).Potential (V)"])
 
         # Debugging outputs
-        st.write("Full Cycle Starting Times:", start_times)
-        st.write("Anodic Starting Times:", start_anodic_times)
-        st.write("Cathodic Starting Times:", start_cathodic_times)
+        st.write("Full Cycle:", start_times)
+        st.write("Anodic Cycle:", start_anodic_times)
+        st.write("Cathodic Cycle:", start_cathodic_times)
 
         # Plot Full Cycle Starting Points
         if start_times:
