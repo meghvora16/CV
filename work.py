@@ -158,7 +158,7 @@ if uploaded_files:
         if start_times:
             fig_time_curr, ax1 = plt.subplots()
             ax1.plot(start_times, start_currents, marker='o')
-            ax1.set_title("Starting Current vs Time (First 30 Cycles)")
+            ax1.set_title("Starting Current vs Time")
             ax1.set_xlabel("Time (s)")
             ax1.set_ylabel("Current (A)")
             ax1.grid(True)
@@ -166,7 +166,7 @@ if uploaded_files:
 
             fig_time_pot, ax2 = plt.subplots()
             ax2.plot(start_times, start_potentials, marker='o', color='green')
-            ax2.set_title("Starting Potential vs Time (First 30 Cycles)")
+            ax2.set_title("Starting Potential vs Time")
             ax2.set_xlabel("Time (s)")
             ax2.set_ylabel("Potential (V)")
             ax2.grid(True)
@@ -176,7 +176,7 @@ if uploaded_files:
         if start_anodic_times:
             fig_anodic, ax_anodic = plt.subplots()
             ax_anodic.plot(start_anodic_times, start_anodic_currents, marker='o', color='green')
-            ax_anodic.set_title("Anodic Starting Current vs Time (First 30 Cycles)")
+            ax_anodic.set_title("Anodic Starting Current vs Time)")
             ax_anodic.set_xlabel("Time (s)")
             ax_anodic.set_ylabel("Current (A)")
             ax_anodic.grid(True)
@@ -184,7 +184,7 @@ if uploaded_files:
 
             fig_anodic_pot, ax_anodic_pot = plt.subplots()
             ax_anodic_pot.plot(start_anodic_times, start_anodic_potentials, marker='o', color='green')
-            ax_anodic_pot.set_title("Anodic Starting Potential vs Time (First 30 Cycles)")
+            ax_anodic_pot.set_title("Anodic Starting Potential vs Time")
             ax_anodic_pot.set_xlabel("Time (s)")
             ax_anodic_pot.set_ylabel("Potential (V)")
             ax_anodic_pot.grid(True)
@@ -194,7 +194,7 @@ if uploaded_files:
         if start_cathodic_times:
             fig_cathodic, ax_cathodic = plt.subplots()
             ax_cathodic.plot(start_cathodic_times, start_cathodic_currents, marker='o', color='blue')
-            ax_cathodic.set_title("Cathodic Starting Current vs Time (First 30 Cycles)")
+            ax_cathodic.set_title("Cathodic Starting Current vs Time")
             ax_cathodic.set_xlabel("Time (s)")
             ax_cathodic.set_ylabel("Current (A)")
             ax_cathodic.grid(True)
@@ -202,7 +202,7 @@ if uploaded_files:
 
             fig_cathodic_pot, ax_cathodic_pot = plt.subplots()
             ax_cathodic_pot.plot(start_cathodic_times, start_cathodic_potentials, marker='o', color='blue')
-            ax_cathodic_pot.set_title("Cathodic Starting Potential vs Time (First 30 Cycles)")
+            ax_cathodic_pot.set_title("Cathodic Starting Potential vs Time")
             ax_cathodic_pot.set_xlabel("Time (s)")
             ax_cathodic_pot.set_ylabel("Potential (V)")
             ax_cathodic_pot.grid(True)
